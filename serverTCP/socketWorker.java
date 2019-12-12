@@ -15,15 +15,14 @@ import java.io.*;
  *
  * @author Prof. Matteo Palitto
  */
-class SocketWorker implements Runnable, Eventi {
+class SocketWorker implements Runnable, EventoListener, EventoPublisher {
     private Socket client;
     private PrintWriter out = null;
-    EventReceiver receiver;
+    EventoReceiver receiver;
 
     //Constructor: inizializza le variabili
-    SocketWorker(Socket client, EventReceiver receiver) {
+    SocketWorker(Socket client) {
         this.client = client;
-        this.receiver = receiver;
         System.out.println("Connesso con: " + client);
     }
     
@@ -32,7 +31,7 @@ class SocketWorker implements Runnable, Eventi {
     //classe EventReceiver
     //e rappresenta la richiesta di inviare il messaggio che e' stato appena 
     //ricevuto da uno dei client connessi
-    public void invia(String messaggio) {
+    public void sendMessaggio(String messaggio) {
         
         //Invia lo stesso messaggio appena ricevuto 
         out.println("Server->> " + messaggio);
@@ -76,8 +75,23 @@ class SocketWorker implements Runnable, Eventi {
             System.out.println("Errore connessione con client: " + client);
         }
     }
+
+    @Override
+    public void registraReceiver(EventoReceiver r) {
+        this.receiver = r;
+    }
+
+    @Override
+    public void messaggioReceived(String m) {
+        this.receiver.setNewMessaggio(m);
+    }
 }
 
-interface Eventi {
-    public void invia(String s);
+interface EventoListener {
+    public void sendMessaggio(String m);
+}
+
+interface EventoPublisher {
+    public void registraReceiver(EventoReceiver r);
+    public void messaggioReceived(String m);
 }
