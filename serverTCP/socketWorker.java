@@ -18,7 +18,7 @@ import java.io.*;
 class SocketWorker implements Runnable, EventoListener, EventoPublisher {
     private Socket client;
     private PrintWriter out = null;
-    EventoReceiver receiver;
+    Evento newMessaggio;
 
     //Constructor: inizializza le variabili
     SocketWorker(Socket client) {
@@ -57,10 +57,10 @@ class SocketWorker implements Runnable, EventoListener, EventoPublisher {
           try{
             line = in.readLine();
             //il nuovo messaggio e' stato ricevuto e lo andiamo ad inserire
-            //nella variabile "messaggio" della classe EventReceiver
+            //nella variabile "messaggio" della classe EventoReceiver
             //il quale aggiornera' la variabile e richiedera' l'invio a ogni
             //Worker, ognuno al proprio client
-            receiver.setNewMessaggio(line);
+            messaggioReceived(line);
             //scrivi messaggio ricevuto su terminale
             System.out.println(clientPort + ">> " + line);
            } catch (IOException e) {
@@ -77,21 +77,12 @@ class SocketWorker implements Runnable, EventoListener, EventoPublisher {
     }
 
     @Override
-    public void registraReceiver(EventoReceiver r) {
-        this.receiver = r;
+    public void registraPublisher(Evento newMessaggio) {
+        this.newMessaggio = newMessaggio;
     }
 
     @Override
     public void messaggioReceived(String m) {
-        this.receiver.setNewMessaggio(m);
+        this.newMessaggio.sendNewMessaggio(m);
     }
-}
-
-interface EventoListener {
-    public void sendMessaggio(String m);
-}
-
-interface EventoPublisher {
-    public void registraReceiver(EventoReceiver r);
-    public void messaggioReceived(String m);
 }
