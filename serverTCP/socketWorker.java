@@ -15,15 +15,24 @@ import java.io.*;
  *
  * @author Prof. Matteo Palitto
  */
-class SocketWorker implements Runnable, EventoListener, EventoPublisher {
+class SocketWorker extends EventoPublisher implements Runnable, EventoSubscriber  {
     private Socket client;
     private PrintWriter out = null;
-    Evento newMessaggio;
 
     //Constructor: inizializza le variabili
     SocketWorker(Socket client) {
         this.client = client;
         System.out.println("Connesso con: " + client);
+    }
+
+    @Override
+    public void registraPublisher(Evento newMessaggio) {
+        this.newMessaggio = newMessaggio;
+    }
+
+    @Override
+    public void messaggioReceived(String m) {
+        this.newMessaggio.sendNewMessaggio(m);
     }
     
     @Override
@@ -74,15 +83,5 @@ class SocketWorker implements Runnable, EventoListener, EventoPublisher {
         } catch (IOException e) {
             System.out.println("Errore connessione con client: " + client);
         }
-    }
-
-    @Override
-    public void registraPublisher(Evento newMessaggio) {
-        this.newMessaggio = newMessaggio;
-    }
-
-    @Override
-    public void messaggioReceived(String m) {
-        this.newMessaggio.sendNewMessaggio(m);
     }
 }

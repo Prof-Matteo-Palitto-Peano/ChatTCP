@@ -22,12 +22,12 @@ class Evento {
     private ArrayList<SocketWorker> workers = new ArrayList<>();
     
     //aggiungo il client alla lista
-    void addListener(SocketWorker worker) {
+    void addSubscriber(SocketWorker worker) {
         this.workers.add(worker);
     }
     
     //rimuovo il client dalla lista
-    void removeListener(SocketWorker worker) {
+    void removeSubscriber(SocketWorker worker) {
         this.workers.remove(worker);
     }
     
@@ -48,13 +48,16 @@ class Evento {
 
 //questa interfaccia deve essere implementata da tutti i threads che vogliono
 //inviare il nuovo messaggio
-interface EventoListener {
+interface EventoSubscriber {
     public void sendMessaggio(String m);
 }
 
-//questa interffacci deve essere implementata da tutti i threads che vogliono
-//ricevere un messaggio per poi poterlo inviare agli altri threads
-interface EventoPublisher {
-    public void registraPublisher(Evento newMessaggio);
-    public void messaggioReceived(String m);
+//questa classe astratta deve essere estesa da tutti i threads che vogliono
+//notificare la ricezione di un messaggio dal client per poi poterlo inviare 
+//a tutti i clients  tramite i relativi workers
+abstract class EventoPublisher {
+    Evento newMessaggio;
+
+    abstract void registraPublisher(Evento newMessaggio);
+    abstract void messaggioReceived(String m);
 }

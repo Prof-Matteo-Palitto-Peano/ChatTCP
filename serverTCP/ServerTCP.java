@@ -41,7 +41,9 @@ public class ServerTCP {
                     w = new SocketWorker(server.accept());
                     w.registraPublisher(newMessaggio);
                     //aggiungo il nuovo Worker nella lista dei Workers
-                    newMessaggio.addListener(w);
+                    //cosi' che puo' ricevere la notifica che un nuovo
+                    //messaggio e' stato ricevuto
+                    newMessaggio.addSubscriber(w);
                     //genero il Thread per l'esecuzione del nuovo Worker
                     Thread t = new Thread(w);
                     //Avvio l'esecuzione del nuovo worker nel Thread
