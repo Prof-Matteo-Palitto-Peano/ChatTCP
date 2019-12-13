@@ -12,13 +12,13 @@ import java.util.ArrayList;
  * @author matteo
  */
 //L'ultimo messaggio ricevuto e' la risorsa comune condivisa tra i vari Threads
-// Con questa Classe ricevo l'ultimo messaggio inviato dai Clients
+//Con questa Classe ricevo l'ultimo messaggio inviato dai Clients
 //e richiedo l'invio a tutti i workers di inviare il messaggio al proprio client
 class Evento {
 
     //ultimo messaggio inviato dai Clients
     private String messaggio;
-    //lista dei workers che viengono creati, uno per ogni Client connesso
+    //lista dei workers che vengono creati, uno per ogni Client connesso
     private ArrayList<SocketWorker> workers = new ArrayList<>();
     
     //aggiungo il client alla lista
@@ -31,12 +31,12 @@ class Evento {
         this.workers.remove(worker);
     }
     
-    //chiamata dai vari Threads quando ricevono un messaggio da client
+    //chiamata dai vari workers quando ricevono un messaggio dal proprio client.
     //questo metodo e' sycronized per evitare conflitti tra workers
     //che desiderano accedere alla stessa risorsa (cioe' nel caso in cui
     // vengono ricevuti simultaneamente i messaggi da piu' clients)
     synchronized void sendNewMessaggio(String m) {
-        //aggiorna l'ultimo messaggio
+        //aggiorna l'ultimo messaggio nella variabile dell'oggetto
         this.messaggio = m;
         //chiedi ad ogni worker di inviare il messaggio ricevuto
         for (SocketWorker worker: this.workers) {
@@ -49,15 +49,27 @@ class Evento {
 //questa interfaccia deve essere implementata da tutti i threads che vogliono
 //inviare il nuovo messaggio
 interface EventoSubscriber {
+    //questo metodo conterra' il codice da eseguire da ogni worker per inviare
+    //il messaggio al proprio client
     public void sendMessaggio(String m);
 }
 
 //questa classe astratta deve essere estesa da tutti i threads che vogliono
 //notificare la ricezione di un messaggio dal client per poi poterlo inviare 
 //a tutti i clients  tramite i relativi workers
-abstract class EventoPublisher {
+//NOTA: ho dichiarato la classe "abstract" in modo da indicare che puo' essere
+//solo estesa e non avrebbe senso creare un oggetto direttamente da essa.
+abstract class EventoPublisher { 
     Evento newMessaggio;
 
-    abstract void registraPublisher(Evento newMessaggio);
-    abstract void messaggioReceived(String m);
+    //Permette alla classe che eredita EventoPublisher di poter generare un
+    //evento
+    public void registraPublisher(Evento newMessaggio) {
+        this.newMessaggio = newMessaggio;
+    }
+
+    //L'evento viene generato/pubblicato chiamando il suguente metodo          
+    public void messaggioReceived(String m) {
+        this.newMessaggio.sendNewMessaggio(m);
+    }
 }

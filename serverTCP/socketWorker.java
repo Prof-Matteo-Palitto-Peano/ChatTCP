@@ -3,8 +3,12 @@
  * Elabora il testo ricevuto che in questo caso viene semplicemente inoltrato
  * a tutti i Clients connessi al Server.
  * Questo avviene accedendo alla risorsa comune messa a disposizone dalla classe
- * EventReceiver
- * 
+ * Evento.
+ * Step 1: attende un nuovo messaggio
+ * Step 2: tramite l'evento newMessaggio nel main, invia a tutti i clients 
+ * connnessi il messaggio.
+ * NOTA: Visto che un client e' accessibile solo dal proprio worker, l'evento
+ * genera una comando ad ogni worker di inviare il messaggio.
  */
 package serverTCP;
 
@@ -24,22 +28,12 @@ class SocketWorker extends EventoPublisher implements Runnable, EventoSubscriber
         this.client = client;
         System.out.println("Connesso con: " + client);
     }
-
-    @Override
-    public void registraPublisher(Evento newMessaggio) {
-        this.newMessaggio = newMessaggio;
-    }
-
-    @Override
-    public void messaggioReceived(String m) {
-        this.newMessaggio.sendNewMessaggio(m);
-    }
     
-    @Override
     //Questo metodo e' invocato dal metodo setNewMessaggio nella 
-    //classe EventReceiver
+    //classe Evento ogni volta che viene generato un evento(messaggioReceived)
     //e rappresenta la richiesta di inviare il messaggio che e' stato appena 
     //ricevuto da uno dei client connessi
+    @Override
     public void sendMessaggio(String messaggio) {
         
         //Invia lo stesso messaggio appena ricevuto 
@@ -47,12 +41,14 @@ class SocketWorker extends EventoPublisher implements Runnable, EventoSubscriber
         
     }
 
-    // Questa e' la funzione che viene lanciata quando il nuovo "Thread" viene generato
+    // Questa e' la funzione che viene lanciata quando il nuovo "Thread" 
+    // viene generato
     public void run(){
         
         BufferedReader in = null;
         try{
-          // connessione con il socket per ricevere (in) e mandare(out) il testo
+          // connessione con il socket per ricevere (in) e inviare(out) il testo
+          // da/al client connesso
           in = new BufferedReader(new InputStreamReader(client.getInputStream()));
           out = new PrintWriter(client.getOutputStream(), true);
         } catch (IOException e) {
@@ -64,6 +60,7 @@ class SocketWorker extends EventoPublisher implements Runnable, EventoSubscriber
         int clientPort = client.getPort(); //il "nome" del mittente (client)
         while(line != null){
           try{
+            //mi metto in attesa di ricevere un nuovo messaggio da client
             line = in.readLine();
             //il nuovo messaggio e' stato ricevuto e lo andiamo ad inserire
             //nella variabile "messaggio" della classe EventoReceiver
