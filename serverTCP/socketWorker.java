@@ -19,14 +19,22 @@ import java.io.*;
  *
  * @author Prof. Matteo Palitto
  */
-class SocketWorker extends EventoPublisher implements Runnable, EventoSubscriber  {
+class SocketWorker implements Runnable, InviaMessaggio, RiceviMessaggio  {
+    //creo il gestore di Messaggi che permette ai vari workers di comunicare tra loro
+    private  static final  MessageManager gestoreMessaggi = new MessageManager();
     private Socket client;
     private PrintWriter out = null;
 
     //Constructor: inizializza le variabili
     SocketWorker(Socket client) {
         this.client = client;
+        gestoreMessaggi.addClient(this);
         System.out.println("Connesso con: " + client);
+    }
+    
+    @Override
+    public void messaggioReceived(String m) {
+        this.gestoreMessaggi.sendNewMessaggio(m);
     }
     
     //Questo metodo e' invocato dal metodo setNewMessaggio nella 

@@ -14,7 +14,7 @@ import java.util.ArrayList;
 //L'ultimo messaggio ricevuto e' la risorsa comune condivisa tra i vari Threads
 //Con questa Classe ricevo l'ultimo messaggio inviato dai Clients
 //e richiedo l'invio a tutti i workers di inviare il messaggio al proprio client
-class Evento {
+class MessageManager {
 
     //ultimo messaggio inviato dai Clients
     private String messaggio;
@@ -22,12 +22,12 @@ class Evento {
     private ArrayList<SocketWorker> workers = new ArrayList<>();
     
     //aggiungo il client alla lista
-    void addSubscriber(SocketWorker worker) {
+    void addClient(SocketWorker worker) {
         this.workers.add(worker);
     }
     
     //rimuovo il client dalla lista
-    void removeSubscriber(SocketWorker worker) {
+    void removeClient(SocketWorker worker) {
         this.workers.remove(worker);
     }
     
@@ -48,7 +48,7 @@ class Evento {
 
 //questa interfaccia deve essere implementata da tutti i threads che vogliono
 //inviare il nuovo messaggio
-interface EventoSubscriber {
+interface InviaMessaggio {
     //questo metodo conterra' il codice da eseguire da ogni worker per inviare
     //il messaggio al proprio client
     public void sendMessaggio(String m);
@@ -59,17 +59,9 @@ interface EventoSubscriber {
 //a tutti i clients  tramite i relativi workers
 //NOTA: ho dichiarato la classe "abstract" in modo da indicare che puo' essere
 //solo estesa e non avrebbe senso creare un oggetto direttamente da essa.
-abstract class EventoPublisher { 
-    Evento newMessaggio;
-
-    //Permette alla classe che eredita EventoPublisher di poter generare un
-    //evento
-    public void registraPublisher(Evento newMessaggio) {
-        this.newMessaggio = newMessaggio;
-    }
+interface RiceviMessaggio { 
 
     //L'evento viene generato/pubblicato chiamando il suguente metodo          
-    public void messaggioReceived(String m) {
-        this.newMessaggio.sendNewMessaggio(m);
-    }
+    public void messaggioReceived(String m);
+
 }
